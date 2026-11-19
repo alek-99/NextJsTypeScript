@@ -2,8 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/admin";
 
-// export const dynamic = "force-dynamic";
-
 export async function GET(req: NextRequest) {
   try {
     const authorization = req.headers.get("authorization");
@@ -15,12 +13,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const token = authorization.substring(7);
+    const token = authorization.slice(7);
 
     // Verifikasi token Firebase
     const decoded = await adminAuth.verifyIdToken(token, true);
 
-    // Ambil data user Firestore
     const snapshot = await adminDb
       .collection("users")
       .doc(decoded.uid)
@@ -37,14 +34,14 @@ export async function GET(req: NextRequest) {
 
     if (user?.status !== "aktif") {
       return NextResponse.json(
-        { success: false, message: "Akun Anda telah dinonaktifkan" },
+        { success: false, message: "Akun tidak aktif" },
         { status: 403 }
       );
     }
 
     if (!["admin", "user"].includes(user?.role)) {
       return NextResponse.json(
-        { success: false, message: "Role pengguna tidak valid" },
+        { success: false, message: "Role tidak valid" },
         { status: 403 }
       );
     }
@@ -62,18 +59,13 @@ export async function GET(req: NextRequest) {
       },
     });
 
-  } catch (error: unknown) {
+  } catch (error) {
     console.error("[AUTH ME ERROR]:", error);
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Terjadi kesalahan autentikasi";
 
     return NextResponse.json(
       {
         success: false,
-        message,
+        message: "Sesi tidak valid atau telah kedaluwarsa",
       },
       { status: 401 }
     );
