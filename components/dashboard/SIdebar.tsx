@@ -9,12 +9,13 @@ import {
   Settings,
   FileText,
   ChartNoAxesCombined,
-  ShieldCheck,
   FolderKanban,
   CircleHelp,
   LogOut,
   X,
-  ChevronRight,
+  ChevronDown,
+  ShieldCheck,
+  UserRound,
 } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
@@ -68,90 +69,84 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const pathname = usePathname();
-
   const menus = role === "admin" ? adminMenus : userMenus;
 
   async function handleLogout() {
-    await signOut(auth);
-    window.location.href = "/login";
+    try {
+      await signOut(auth);
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   }
 
   return (
     <>
       {open && (
-        <div
+        <button
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          aria-label="Tutup sidebar"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
         />
       )}
 
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 flex w-[270px]
-          flex-col bg-[#111827] text-white
-          transition-transform duration-300
+          fixed inset-y-0 left-0 z-50 flex w-[260px]
+          flex-col border-r border-gray-200 bg-white
+          shadow-sm transition-transform duration-300
           lg:translate-x-0
           ${open ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        {/* Logo */}
-        <div className="flex h-[76px] items-center justify-between border-b border-white/10 px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
-              <ShieldCheck size={22} />
+        {/* Brand */}
+        <div className="flex h-[60px] shrink-0 items-center justify-between border-b border-gray-200 px-5">
+          <Link
+            href={`/dashboard/${role}`}
+            className="flex items-center gap-3"
+            onClick={onClose}
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#3C8DBC] text-white">
+              <ShieldCheck size={21} />
             </div>
 
             <div>
-              <h1 className="text-base font-bold tracking-wide">
-                TASKORA
+              <h1 className="text-[17px] font-bold tracking-wide text-gray-800">
+                PONPES AL-ARBAIN
               </h1>
-              <p className="text-[10px] tracking-[2px] text-gray-400">
+              <p className="text-[9px] tracking-[2px] text-gray-400">
                 MANAGEMENT SYSTEM
               </p>
             </div>
-          </div>
+          </Link>
 
           <button
             onClick={onClose}
-            className="lg:hidden"
+            className="text-gray-500 lg:hidden"
             aria-label="Tutup sidebar"
           >
-            <X size={21} />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Role */}
-        <div className="mx-4 mt-6 rounded-xl border border-white/10 bg-white/5 p-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400">
-              <ShieldCheck size={19} />
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold">
-                {role === "admin" ? "Administrator" : "User Account"}
-              </p>
-              <p className="mt-1 text-[10px] text-gray-400">
-                {role === "admin" ? "Full Access" : "Limited Access"}
-              </p>
-            </div>
-
-            <span className="ml-auto h-2 w-2 rounded-full bg-green-400" />
-          </div>
-        </div>
+        {/* User Information */}
+       
+         
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-7">
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
           {menus.map((group) => (
             <div key={group.title}>
-              <p className="mb-3 px-3 text-[10px] font-bold tracking-[2px] text-gray-500">
+              <p className="mb-2 px-3 text-[10px] font-bold tracking-wider text-gray-400">
                 {group.title}
               </p>
 
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const Icon = item.icon;
-                  const active = pathname === item.href ||
+
+                  const active =
+                    pathname === item.href ||
                     (item.href !== `/dashboard/${role}` &&
                       pathname.startsWith(item.href + "/"));
 
@@ -161,23 +156,21 @@ export default function Sidebar({
                       href={item.href}
                       onClick={onClose}
                       className={`
-                        group flex items-center gap-3 rounded-xl
-                        px-3 py-3 text-[13px] font-medium
-                        transition-all
+                        flex items-center gap-3 rounded-md
+                        px-3 py-[10px] text-[13px]
+                        transition-colors
                         ${
                           active
-                            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                            : "text-gray-400 hover:bg-white/5 hover:text-white"
+                            ? "bg-[#3C8DBC] font-semibold text-white shadow-sm"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-[#3C8DBC]"
                         }
                       `}
                     >
-                      <Icon size={18} />
+                      <Icon size={17} strokeWidth={1.8} />
 
-                      <span className="flex-1">
-                        {item.label}
-                      </span>
+                      <span className="flex-1">{item.label}</span>
 
-                      {active && <ChevronRight size={15} />}
+                      {active && <ChevronDown className="-rotate-90" size={14} />}
                     </Link>
                   );
                 })}
@@ -186,18 +179,18 @@ export default function Sidebar({
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="border-t border-white/10 p-4">
+        {/* Footer */}
+        <div className="border-t border-gray-200 p-4">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-red-400 transition hover:bg-red-500/10"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-sm text-red-500 transition hover:bg-red-50"
           >
-            <LogOut size={18} />
+            <LogOut size={17} />
             Keluar dari aplikasi
           </button>
 
-          <p className="mt-4 text-center text-[10px] text-gray-600">
-            © 2026 TASKORA SYSTEM
+          <p className="mt-3 text-center text-[10px] text-gray-400">
+            TASKORA v1.0.0
           </p>
         </div>
       </aside>
